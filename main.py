@@ -1,5 +1,6 @@
 import argparse
 import os
+import datetime
 
 import pandas as pd
 import geopandas as gpd
@@ -17,6 +18,9 @@ NATURAL_EARTH_DIR = 'NaturalEarth'
 NATURAL_EARTH_ZIP_FILENAME = 'NE_admin_wld'
 NATURAL_EARTH_FILENAME = 'ne_10m_admin_0_countries_lakes'
 #NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
+
+OUTPUT_DIR = 'ToWeb'
+OUTPUT_FILENAME = 'wrl_government_measures_py_s0_acaps_pp_governmentmeasures.shp'
 
 
 def parse_args():
@@ -39,8 +43,8 @@ def main(input_path, debug=False):
     # TODO: Fetch NaturalEarth data?
     # Read in NaturalEarth data
     # TODO: Read in from original shapefile and add transformations here
-    filename = os.path.join(input_path, CRASH_MOVE_MAIN_DIR, NATURAL_EARTH_DIR, NATURAL_EARTH_ZIP_FILENAME)
-    df_naturalearth = gpd.read_file(f'zip://{filename}.zip!{NATURAL_EARTH_FILENAME}.shp')
+    input_filename = os.path.join(input_path, CRASH_MOVE_MAIN_DIR, NATURAL_EARTH_DIR, NATURAL_EARTH_ZIP_FILENAME)
+    df_naturalearth = gpd.read_file(f'zip://{input_filename}.zip!{NATURAL_EARTH_FILENAME}.shp')
     # Do the joidt.strftime('%Y-%m-%d')n
     df_output = df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='ISO')
     # Convert datetime column to string to write to shape file
@@ -48,8 +52,13 @@ def main(input_path, debug=False):
         df_output[colname] = df_output[colname].dt.strftime('%Y-%m-%d')
     # Drop link because ESRI doesn't like it
     df_output = df_output.drop(columns=['LINK'])
-    
-    df_output.to_file("test.shp")
+    # Output to CMF
+    output_dir = os.path.join(input_path, CRASH_MOVE_MAIN_DIR, OUTPUT_DIR, datetime.date.today().strftime('%d%m'))
+    try:
+        os.mkdir(output_dir)
+    except FileExistsError:
+        pass
+    df_output.to_file(os.path.join(output_dir, OUTPUT_FILENAME))
 
 
 if __name__ == '__main__':
