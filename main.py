@@ -10,9 +10,12 @@ from utils.hdx_api import query_api
 
 
 ACAPS_HDX_ADDRESS = 'acaps-covid19-government-measures-dataset'
-ACAPS_DATASET_NAME = '20200326 ACAPS - COVID-19 Goverment Measures Dataset v2.xlsx'
+# TODO: Take this out
+ACAPS_DATASET_NAME = '20200330 ACAPS - COVID-19 Goverment Measures Dataset v3.xlsx'
 
-CRASH_MOVE_MAIN_DIR = '1_Original_Data'
+CRASH_MOVE_MAIN_DIR = os.path.join('2020-03-16-global-covid-19-response-group',
+                                   'GIS',
+                                   '1_Original_Data')
 
 NATURAL_EARTH_DIR = 'NaturalEarth'
 NATURAL_EARTH_ZIP_FILENAME = 'NE_admin_wld'
@@ -39,6 +42,7 @@ def main(input_path, debug=False):
     else:
         filepath = os.path.join(data_dir, f'{ACAPS_DATASET_NAME}.XLSX')
     # TODO: Copy file to crash move folder?
+    print(filepath)
     df_acaps = pd.read_excel(filepath, sheet_name='Database')
     # TODO: Fetch NaturalEarth data?
     # Read in NaturalEarth data
