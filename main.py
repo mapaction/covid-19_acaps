@@ -19,14 +19,13 @@ CRASH_MOVE_OUTPUT_DIR = '2_Active_Data'
 
 ACAPS_DIR = 'ACAPS_Govt_Measures'
 
-NATURAL_EARTH_DIR = 'NaturalEarth'
-NATURAL_EARTH_ZIP_FILENAME = 'NE_admin_wld'
+NATURAL_EARTH_DIR = os.path.join('NaturalEarth', 'NE_admin_wld')
 NATURAL_EARTH_FILENAME = 'ne_10m_admin_0_countries_lakes'
 #NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
 
 OUTPUT_DIR = 'ToWeb'
 OUTPUT_FILENAME = 'wrl_government_measures_pt_s0_acaps_pp_governmentmeasures.shp'
-REDUCED_OUTPUT_FILE = 'wrl_government_measures_py_s0_acaps_pp_governmentmeasures_SummaryByMonth.shp'
+REDUCED_OUTPUT_FILENAME = 'wrl_government_measures_py_s0_acaps_pp_governmentmeasures_SummaryByMonth.shp'
 
 logger = logging.getLogger()
 
@@ -93,8 +92,8 @@ def get_df_naturalearth(cmf_path: str) -> gpd.GeoDataFrame:
     # Read in NaturalEarth data
     # TODO: Read in from original shapefile and add transformations here
     input_filename = os.path.join(cmf_path, CRASH_MOVE_MAIN_DIR, CRASH_MOVE_INPUT_DIR,
-                                  NATURAL_EARTH_DIR, NATURAL_EARTH_ZIP_FILENAME)
-    df_naturalearth = gpd.read_file(f'zip://{input_filename}.zip!{NATURAL_EARTH_FILENAME}.shp')
+                                  NATURAL_EARTH_DIR, NATURAL_EARTH_FILENAME)
+    df_naturalearth = gpd.read_file(f'{input_filename}.shp')
     return df_naturalearth
 
 
