@@ -2,6 +2,7 @@ import argparse
 import os
 import datetime
 import shutil
+import logging
 
 import pandas as pd
 import geopandas as gpd
@@ -24,8 +25,10 @@ NATURAL_EARTH_FILENAME = 'ne_10m_admin_0_countries_lakes'
 #NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
 
 OUTPUT_DIR = 'ToWeb'
-OUTPUT_FILENAME = 'wrl_government_measures_py_s0_acaps_pp_governmentmeasures.shp'
-REDUCED_OUTPUT_FILENAME = 'wrl_government_measures_pt_s0_acaps_pp_governmentmeasures_SummaryByMonth.shp'
+OUTPUT_FILENAME = 'wrl_government_measures_pt_s0_acaps_pp_governmentmeasures.shp'
+REDUCED_OUTPUT_FILE = 'wrl_government_measures_py_s0_acaps_pp_governmentmeasures_SummaryByMonth.shp'
+
+logger = logging.getLogger()
 
 
 def parse_args():
@@ -38,15 +41,18 @@ def parse_args():
 
 def main(cmf_path: str, debug: bool = False):
     # Get ACAPS and Natural Earth data
+    logger.info('Getting ACAPS and Natural Earth data')
     df_acaps = get_df_acaps(cmf_path, debug)
     df_acaps_reduced = get_df_acaps_reduced(df_acaps)
     df_naturalearth = get_df_naturalearth(cmf_path)
     # Do the join, and convert to point instead of shape
-    df_output = df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='ISO')
-    df_output['geometry'] = df_output['geometry'].apply(lambda x: x.representative_point())
-    df_output_reduced = df_naturalearth.merge(df_acaps_reduced, how='outer', left_on='ADM0_A3_IS', right_on='ISO')
+    logger.info('Joining data')
+    df_output = get_df_output(df_acaps, df_naturalearth)
+    df_output_reduced = join_naturalearth_with_acaps(df_naturalearth, df_acaps_reduced)
     # Output to CMF
+    logger.info('Writing out to shape file')
     output_to_cmf(df_output, df_output_reduced, cmf_path)
+    logger.info('Done')
 
 
 def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
@@ -63,7 +69,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
         filename = sorted(os.listdir(acaps_dir))[-1]
     # Read in the dataframe
     df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name='Database',
-                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE', 'DATE_IMPLEMENTED'])
+                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE', 'DATE_IMPLEMENTED', 'ID'])
     # Drop rows with empty region
     df_acaps = df_acaps.loc[df_acaps['REGION'] != '']
     # Make month column and onvert datetime column to string to write to shape file
@@ -90,6 +96,28 @@ def get_df_naturalearth(cmf_path: str) -> gpd.GeoDataFrame:
                                   NATURAL_EARTH_DIR, NATURAL_EARTH_ZIP_FILENAME)
     df_naturalearth = gpd.read_file(f'zip://{input_filename}.zip!{NATURAL_EARTH_FILENAME}.shp')
     return df_naturalearth
+
+
+def get_df_output(df_acaps: pd.DataFrame, df_naturalearth: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    df_output = join_naturalearth_with_acaps(df_naturalearth, df_acaps)
+    # Convert to points
+    df_output['geometry'] = df_output['geometry'].apply(lambda x: x.representative_point())
+    # Rename columns for dashboard
+    df_output = df_output.rename(columns={
+        'CATEGORY': 'CATEGOR',
+        'DATE_IMPLEMENTED': 'DATE_IM',
+        'ADM0_A3_IS': 'ADM0_A3',
+        'Shape_Leng': 'Shp_Lng',
+        'Shape_Area': 'Shap_Ar',
+        'SOVEREIGNT': 'SOVEREI',
+        'ID': 'ORIG_FID'
+    })
+
+    return df_output
+
+
+def join_naturalearth_with_acaps(df_naturalearth: gpd.GeoDataFrame, df_acaps: pd.DataFrame) -> gpd.GeoDataFrame:
+    return df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='ISO').drop(['ISO'], axis=1)
 
 
 def output_to_cmf(df_output, df_output_reduced, cmf_path):
