@@ -16,14 +16,12 @@ logger = logging.getLogger()
 Configuration.create(hdx_site=HDX_SITE, user_agent=USER_AGENT, hdx_read_only=True)
 
 
-def query_api(hdx_address, directory, dataset_names=None):
-    if dataset_names is None:
-        dataset_names = []
+def query_api(hdx_address, directory, resource_format='XLSX'):
     dataset = Dataset.read_from_hdx(hdx_address)
     resources = dataset.get_resources()
     filenames = {}
     for resource in resources:
-        if resource['name'] in dataset_names or not dataset_names:
+        if resource['format'] == resource_format:
             _, path = resource.download()
             filename = os.path.basename(path)
             shutil.move(path, os.path.join(directory, filename))
