@@ -59,16 +59,19 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
     data_dir = get_temp_dir('covid19_acaps')
     acaps_dir = os.path.join(cmf_path, CRASH_MOVE_MAIN_DIR, CRASH_MOVE_INPUT_DIR, ACAPS_DIR)
     if not debug:
-        filename = list(query_api(ACAPS_HDX_ADDRESS, data_dir).values())[0]
+        filename_original = list(query_api(ACAPS_HDX_ADDRESS, data_dir).values())[0]
+        filename = f'{datetime.date.today().strftime("%Y%m%d")}_{filename_original}'
         filepath = os.path.join(acaps_dir, filename)
         # Copy to crash move folder
-        shutil.move(os.path.join(data_dir, filename), filepath)
+        logger.info(f'Moving dataset to {filepath}')
+        shutil.move(os.path.join(data_dir, filename_original), filepath)
     else:
         # If debug, check datadir folder and take the last item
         filename = sorted(os.listdir(acaps_dir))[-1]
     # Read in the dataframe
     df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name='Database',
-                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE', 'DATE_IMPLEMENTED', 'ID'])
+                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
+                                      'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
     df_acaps = df_acaps.loc[df_acaps['REGION'] != '']
     # Make month column and onvert datetime column to string to write to shape file
