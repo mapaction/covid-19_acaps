@@ -85,7 +85,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
 def get_df_acaps_reduced(df_acaps: pd.DataFrame) -> pd.DataFrame:
     return (df_acaps.assign(CAT_CNT=0)
                     .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
-                    .groupby(['COUNTRY', 'REGION',  'ISO', 'MONTH', 'CATEGORY'])
+                    .groupby(['COUNTRY', 'REGION',  'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
                     .count().reset_index()
                      )
 
