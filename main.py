@@ -73,7 +73,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
                              usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
                                       'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
-    df_acaps = df_acaps.loc[df_acaps['REGION'] != '']
+    df_acaps = df_acaps.loc[(df_acaps['REGION'] != '') & (~df_acaps['REGION'].isna())]
     # Make month column and onvert datetime column to string to write to shape file
     df_acaps['MONTH'] = df_acaps['DATE_IMPLEMENTED'].dt.strftime('%B')
     df_acaps['DATE_IMPLEMENTED'] = df_acaps['DATE_IMPLEMENTED'].dt.strftime('%Y-%m-%d')
