@@ -70,6 +70,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
         filename = sorted(os.listdir(acaps_dir))[-1]
     # Read in the dataframe
     df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name='Database',
+                             parse_dates=['DATE_IMPLEMENTED'],
                              usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
                                       'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
