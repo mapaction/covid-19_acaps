@@ -71,7 +71,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
     # Read in the dataframe
     df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name='Dataset',
                              parse_dates=['DATE_IMPLEMENTED'],
-                             usecols=['REGION', 'COUNTRY', '_ISO', 'CATEGORY', '_MEASURE',
+                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
                                       'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
     df_acaps = df_acaps.loc[(df_acaps['REGION'] != '') & (~df_acaps['REGION'].isna())]
@@ -85,8 +85,8 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
 
 def get_df_acaps_reduced(df_acaps: pd.DataFrame) -> pd.DataFrame:
     return (df_acaps.assign(CAT_CNT=0)
-                    .drop(columns=['DATE_IMPLEMENTED', '_MEASURE'])
-                    .groupby(['COUNTRY', 'REGION',  '_ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
+                    .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
+                    .groupby(['COUNTRY', 'REGION',  'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
                     .count().reset_index()
                      )
 
@@ -120,7 +120,7 @@ def get_df_output(df_acaps: pd.DataFrame, df_naturalearth: gpd.GeoDataFrame) -> 
 
 
 def join_naturalearth_with_acaps(df_naturalearth: gpd.GeoDataFrame, df_acaps: pd.DataFrame) -> gpd.GeoDataFrame:
-    return df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='_ISO').drop(['_ISO'], axis=1)
+    return df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='ISO').drop(['ISO'], axis=1)
 
 
 def output_to_cmf(df_output, df_output_reduced, cmf_path):
