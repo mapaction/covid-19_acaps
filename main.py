@@ -7,10 +7,8 @@ import logging
 import pandas as pd
 import geopandas as gpd
 from hdx.utilities.path import get_temp_dir
-from xlrd import XLRDError
 
 from utils.hdx_api import query_api
-
 
 ACAPS_HDX_ADDRESS = 'acaps-covid19-government-measures-dataset'
 
@@ -22,7 +20,7 @@ ACAPS_DIR = 'ACAPS_Govt_Measures'
 
 NATURAL_EARTH_DIR = os.path.join('NaturalEarth', 'NE_admin_wld')
 NATURAL_EARTH_FILENAME = 'ne_10m_admin_0_countries_lakes'
-#NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
+# NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
 
 OUTPUT_DIR = 'ToWeb'
 OUTPUT_FILENAME = 'wrl_government_measures_pt_s0_acaps_pp_governmentmeasures.shp'
@@ -71,9 +69,9 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
         filename = sorted(os.listdir(acaps_dir))[-1]
     # Read in the dataframe
     df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name=1,
-                         parse_dates=['DATE_IMPLEMENTED'],
-                         usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
-                                  'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
+                             parse_dates=['DATE_IMPLEMENTED'],
+                             usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
+                                      'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
     df_acaps = df_acaps.loc[(df_acaps['REGION'] != '') & (~df_acaps['REGION'].isna())]
     # Make month column and onvert datetime column to string to write to shape file
@@ -86,10 +84,10 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
 
 def get_df_acaps_reduced(df_acaps: pd.DataFrame) -> pd.DataFrame:
     return (df_acaps.assign(CAT_CNT=0)
-                    .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
-                    .groupby(['COUNTRY', 'REGION',  'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
-                    .count().reset_index()
-                     )
+            .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
+            .groupby(['COUNTRY', 'REGION', 'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
+            .count().reset_index()
+            )
 
 
 def get_df_naturalearth(cmf_path: str) -> gpd.GeoDataFrame:
