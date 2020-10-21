@@ -10,7 +10,6 @@ from hdx.utilities.path import get_temp_dir
 
 from utils.hdx_api import query_api
 
-
 ACAPS_HDX_ADDRESS = 'acaps-covid19-government-measures-dataset'
 
 CRASH_MOVE_MAIN_DIR = os.path.join('2020-03-16-global-covid-19-response-group', 'GIS')
@@ -21,7 +20,7 @@ ACAPS_DIR = 'ACAPS_Govt_Measures'
 
 NATURAL_EARTH_DIR = os.path.join('NaturalEarth', 'NE_admin_wld')
 NATURAL_EARTH_FILENAME = 'ne_10m_admin_0_countries_lakes'
-#NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
+# NATURAL_EARTH_COLNAMES = ['SOVEREIGNT', 'NAME', 'ADM_A3_IS']
 
 OUTPUT_DIR = 'ToWeb'
 OUTPUT_FILENAME = 'wrl_government_measures_pt_s0_acaps_pp_governmentmeasures.shp'
@@ -69,7 +68,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
         # If debug, check datadir folder and take the last item
         filename = sorted(os.listdir(acaps_dir))[-1]
     # Read in the dataframe
-    df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name='Dataset',
+    df_acaps = pd.read_excel(os.path.join(acaps_dir, filename), sheet_name=1,
                              parse_dates=['DATE_IMPLEMENTED'],
                              usecols=['REGION', 'COUNTRY', 'ISO', 'CATEGORY', 'MEASURE',
                                       'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
@@ -85,10 +84,10 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
 
 def get_df_acaps_reduced(df_acaps: pd.DataFrame) -> pd.DataFrame:
     return (df_acaps.assign(CAT_CNT=0)
-                    .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
-                    .groupby(['COUNTRY', 'REGION',  'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
-                    .count().reset_index()
-                     )
+            .drop(columns=['DATE_IMPLEMENTED', 'MEASURE'])
+            .groupby(['COUNTRY', 'REGION', 'ISO', 'MONTH', 'CATEGORY', 'LOG_TYPE'])
+            .count().reset_index()
+            )
 
 
 def get_df_naturalearth(cmf_path: str) -> gpd.GeoDataFrame:
