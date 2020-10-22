@@ -74,7 +74,7 @@ def get_df_acaps(cmf_path: str, debug: bool) -> pd.DataFrame:
                                       'DATE_IMPLEMENTED', 'ID', 'LOG_TYPE'])
     # Drop rows with empty region
     df_acaps = df_acaps.loc[(df_acaps['REGION'] != '') & (~df_acaps['REGION'].isna())]
-    # Make month column and onvert datetime column to string to write to shape file
+    # Make month column and convert datetime column to string to write to shape file
     df_acaps['MONTH'] = df_acaps['DATE_IMPLEMENTED'].dt.strftime('%B')
     df_acaps['DATE_IMPLEMENTED'] = df_acaps['DATE_IMPLEMENTED'].dt.strftime('%Y-%m-%d')
     # Fill NAs in dates with "Unknown"
@@ -119,7 +119,11 @@ def get_df_output(df_acaps: pd.DataFrame, df_naturalearth: gpd.GeoDataFrame) -> 
 
 
 def join_naturalearth_with_acaps(df_naturalearth: gpd.GeoDataFrame, df_acaps: pd.DataFrame) -> gpd.GeoDataFrame:
-    return df_naturalearth.merge(df_acaps, how='outer', left_on='ADM0_A3_IS', right_on='ISO').drop(['ISO'], axis=1)
+    diff = list(set(df_acaps.ISO.unique()) - set(df_naturalearth.ADM0_A3_IS.unique()))
+    if len(diff) > 0:
+        logger.warning('Countries from ACAPS data without Natural Earth data: {}'.format(diff))
+    # Merge to keep all elements of the Natural Earth data, but not any keys only in the ACAPS
+    return df_naturalearth.merge(df_acaps, how='left', left_on='ADM0_A3_IS', right_on='ISO').drop(['ISO'], axis=1)
 
 
 def output_to_cmf(df_output, df_output_reduced, cmf_path):
